@@ -45,3 +45,6 @@ Now that you have everything ready, you’re going to open and upload the code t
 4. **Upload the Code**:
    - Click the "Upload" button (the right arrow in the toolbar).
    - Wait for the "Done uploading" message at the bottom of the screen. Your code is now running on your Arduino!
+
+## License
+This project is open-source and available under the [MIT License](LICENSE).
