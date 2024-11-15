@@ -1,12 +1,12 @@
 // Define the pins
 const int pirPin = 2;    // PIR sensor output connected to digital pin 2
-const int ledPin = 13;   // LED connected to digital pin 13
+const int ledPin = 10;   // LED connected to digital pin 13
 
 void setup() {
   pinMode(pirPin, INPUT);    // Set PIR sensor pin as input
   pinMode(ledPin, OUTPUT);   // Set LED pin as output
 
-  Serial.begin(9600);        // Start serial communication for debugging
+  //Serial.begin(9600);        // Start serial communication for debugging
 }
 
 void loop() {
