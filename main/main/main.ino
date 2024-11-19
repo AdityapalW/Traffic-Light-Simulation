@@ -104,8 +104,19 @@ void loop() {
 
       //let the padestrian cross
 
-    delay(crossTime);
+      delay(crossTime);
 
+
+      //reseting all the light
+      digitalWrite(redLightPin, LOW);
+      digitalWrite(greenLightPin, HIGH);
+      digitalWrite(pedLight1Pin, LOW);
+      digitalWrite(pedLight2Pin, HIGH);
+
+      Serial.println("Crossing complete. Lights reset.");
+
+  }  else {  // if no motion was detected
+      Serial.println("No motion detected. Cancelling crossing.");
   }
 
 
