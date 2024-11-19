@@ -14,8 +14,8 @@ const int redLightPin = 5;
 const int yellowLightPin = 6;
 const int greenLightPin = 8;
 
-const int pedLight1Pin = 9;
-const int pedLight2Pin = 10;
+const int pedLight1Pin = 9;  //Walking Sign
+const int pedLight2Pin = 10; //hand sign
 
 const int speakerPin = 11; //speaker
 
@@ -37,6 +37,16 @@ void setup() {
   pinMode(pedLight1Pin, OUTPUT);
   pinMode(pedLight2Pin, OUTPUT);
   pinMode(speakerPin, OUTPUT);
+
+
+  //initialise all the Lights
+  digitalWrite(redLightPin, LOW);
+  digitalWrite(yellowLightPin, LOW);
+  digitalWrite(greenLightPin, HIGH);
+  digitalWrite(pedLight1Pin, LOW);
+  digitalWrite(pedLight2Pin, HIGH);
+
+
 
 
 }
