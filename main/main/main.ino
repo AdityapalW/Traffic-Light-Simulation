@@ -1,13 +1,13 @@
 //define pins
 
 //rain sensor
-const int rain1Pin = 1;
+//const int rain1Pin = 2;
 
 //motion sensor
-const int motionPin = 2;
+const int motionPin = 3;
 
 //button
-const int buttonPin = 3;
+const int buttonPin = 4;
 
 //lights
 const int redLightPin = 5;
@@ -19,6 +19,10 @@ const int pedLight2Pin = 10; //hand sign
 
 const int speakerPin = 11; //speaker
 
+ int waitTime;
+ int crossTime
+
+
 //some variables
 int buttonState = LOW;           // Variable to hold the button state
 int motionDetected = LOW;        // Variable to hold motion sensor state
@@ -27,7 +31,7 @@ unsigned long buttonPressTime = 0; // To record the time when the button is pres
 
 void setup() {
   // Inputs
-  pinMode(rain1Pin, INPUT);    
+  //pinMode(rain1Pin, INPUT);    
   pinMode(buttonPin, INPUT);   
   pinMode(motionPin, INPUT);
   //Outputs
@@ -48,17 +52,62 @@ void setup() {
 
 
 
+  // ignore this 
+  Serial.begin(9600);                 // Start serial communication for debugging
+
 
 }
 
 void loop() {
-  
+
   //match pin to input value
-  int rain1 = digitalRead(rain1Pin);
-  int button = digitalRead(buttonPin); //needs timer?
-  int motion = digitalRead(motionPin);
+  int rain1value = analogRead(A0); //Since rain sensor is a analog sensor
+  buttonState = digitalRead(buttonPin); //needs timer?
+  motionDetected = digitalRead(motionPin);
 
   //make array made of input values
+
+
+
+
+  // If the button is pressed
+  if (buttonState == LOW) {
+    Serial.println("Button pressed. Pedestrian crossing requested.");
+
+  if (rain1value > 500) { // Threshold for detecting rain (adjust as needed)
+      Serial.println("Rain detected. Adjusting timings...");
+      waitTime = 5000;   // Shorten pedestrian wait time
+      crossTime = 8000;  // Extend pedestrian crossing time
+    } else {
+      Serial.println("No rain detected. Using default timings.");
+      waitTime = 10000;  // Default wait time
+      crossTime = 5000;  // Default crossing time
+    }
+    delay(waitTime/2);
+
+    if (motionDetected == HIGH) {
+      Serial.println("Motion detected. Pedestrian is still here");
+
+    delay(waitTime/2);
+
+      // After the wait time is donr turn the light red
+      digitalWrite(greenLightPin, LOW);
+      digitalWrite(yellowLightPin, HIGH);
+      delay(3000); // Yellow light delay
+      digitalWrite(yellowLightPin, LOW);
+      digitalWrite(redLightPin, HIGH);
+
+      // Pedestrian light ON
+      digitalWrite(pedLight1Pin, HIGH);
+      digitalWrite(pedLight2Pin, LOW);
+
+
+      //let the padestrian cross
+
+    delay(crossTime);
+
+  }
+
 
 
 }
