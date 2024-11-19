@@ -3,24 +3,27 @@
 //rain sensor
 const int rain1Pin = 1;
 
+//motion sensor
+const int motionPin = 2;
+
 //button
 const int buttonPin = 3;
-
-//motion sensor
-const int motionPin = 4;
 
 //lights
 const int redLightPin = 5;
 const int yellowLightPin = 6;
-const int greenLightPin = 7;
+const int greenLightPin = 8;
 
-const int pedLight1Pin = 8;
-const int pedLight2Pin = 9;
+const int pedLight1Pin = 9;
+const int pedLight2Pin = 10;
 
-const int speakerPin = 10; //speaker
+const int speakerPin = 11; //speaker
 
+//some variables
+int buttonState = LOW;           // Variable to hold the button state
+int motionDetected = LOW;        // Variable to hold motion sensor state
+unsigned long buttonPressTime = 0; // To record the time when the button is pressed
 
-//setup function
 
 void setup() {
   // Inputs
