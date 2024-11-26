@@ -27,7 +27,9 @@ const int speakerPin = 11; //speaker
 int buttonState = LOW;           // Variable to hold the button state
 int motionDetected = LOW;        // Variable to hold motion sensor state
 unsigned long buttonPressTime = 0; // To record the time when the button is pressed
-
+int tones[] = {
+  3465, 2850, 2333, 1956, 1638, 1380, 1161, 992, 814, 704, 500
+};
 
 void setup() {
   // Inputs
@@ -50,6 +52,28 @@ void setup() {
   digitalWrite(pedLight1Pin, LOW);
   digitalWrite(pedLight2Pin, HIGH);
 
+  void playIdle() {
+  tone(spkPin, 973, 25);
+  delay(25);
+  noTone(spkPin);
+}
+void playChirp() {
+  // Iterate through all tones
+  for (int i = 0; i < 11; i++) {
+    // Play the next tone
+    tone(spkPin, tones[i], 11);
+    delay(11);
+  }
+}
+void playWoodpecker() {
+  // 17x = 2secs; 85x = 10 seconds
+  for (int i = 0; i <= 85; i++) {
+    tone(spkPin, 500, 30);
+    delay(30);
+    noTone(spkPin);
+    delay(117); // wait
+  }
+}
 
 
   // ignore this 
@@ -73,6 +97,7 @@ void loop() {
   // If the button is pressed
   if (buttonState == LOW) {
     Serial.println("Button pressed. Pedestrian crossing requested.");
+   playChirp();
 
   if (rain1value > 500) { // Threshold for detecting rain (adjust as needed)
       Serial.println("Rain detected. Adjusting timings...");
