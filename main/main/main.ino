@@ -1,142 +1,137 @@
-//define pins
+// Pin Definitions
+const int buttonPin = 4;          // Pedestrian button
+const int motionPin = 3;          // Motion sensor
+const int redLightPin = 5;        // Traffic red light
+const int yellowLightPin = 6;     // Traffic yellow light
+const int greenLightPin = 7;      // Traffic green light
+const int pedWalkLightPin = 10;   // Pedestrian walk light
+const int pedStopLightPin = 9;    // Pedestrian stop light
+const int spkPin = 8;             // Speaker
+const int weatherSensorPin = A0;  // Weather sensor (rain detection)
 
-//rain sensor
-//const int rain1Pin = 2;
+// Timing Variables
+int waitTime = 10000;             // Default wait time for button press (in ms)
+int crossTime = 15000;            // Default pedestrian crossing time (in ms)
+int halfWaitTime = waitTime / 2;  // Half the wait time for checking motion
 
-//motion sensor
-const int motionPin = 3;
+// Sound tones
+int tones[] = {3465, 2850, 2333, 1956, 1638, 1380, 1161, 992, 814, 704, 500};
 
-//button
-const int buttonPin = 4;
+// Rain thresholds
+const int rainThreshold = 500;   // Analog value threshold for rain detection
 
-//lights
-const int redLightPin = 5;
-const int yellowLightPin = 6;
-const int greenLightPin = 8;
-
-const int pedLight1Pin = 9;  //Walking Sign
-const int pedLight2Pin = 10; //hand sign
-
-const int spkPin = 11; //speaker
-
- int waitTime;
- int crossTime
-
-
-//some variables
-int buttonState = LOW;           // Variable to hold the button state
-int motionDetected = LOW;        // Variable to hold motion sensor state
-unsigned long buttonPressTime = 0; // To record the time when the button is pressed
-
-
-void setup() {
-  // Inputs
-  //pinMode(rain1Pin, INPUT);    
-  pinMode(buttonPin, INPUT);   
-  pinMode(motionPin, INPUT);
-  //Outputs
-  pinMode(redLightPin, OUTPUT);
-  pinMode(yellowLightPin, OUTPUT);
-  pinMode(greenLightPin, OUTPUT);
-  pinMode(pedLight1Pin, OUTPUT);
-  pinMode(pedLight2Pin, OUTPUT);
-  pinMode (spkPin, OUTPUT);
-
-
-  //initialise all the Lights
-  digitalWrite(redLightPin, LOW);
-  digitalWrite(yellowLightPin, LOW);
-  digitalWrite(greenLightPin, HIGH);
-  digitalWrite(pedLight1Pin, LOW);
-  digitalWrite(pedLight2Pin, HIGH);
-
-
-
-  // ignore this 
-  Serial.begin(9600);                 // Start serial communication for debugging
-
-
+void playChirp() {
+  for (int i = 0; i < 11; i++) {
+    tone(spkPin, tones[i], 11);
+    delay(11);
+  }
 }
 
-//functions for playing tones (speaker)
-
-int tones[] = {
-  3465, 2850, 2333, 1956, 1638, 1380, 1161, 992, 814, 704, 500
-};
-
-void playIdle() {
+void playIdleTone() {
   tone(spkPin, 973, 25);
   delay(25);
   noTone(spkPin);
 }
 
-void playChirp() {
-  // Iterate through all tones
-  for (int i = 0; i < 11; i++) {
-    // Play the next tone
-    tone(spkPin, tones[i], 11);
-    delay(11);
+void handlePedestrianLights(bool walk) {
+  if (walk) {
+    digitalWrite(pedWalkLightPin, LOW); // Walk light ON
+    digitalWrite(pedStopLightPin, HIGH); // Stop light OFF
+  } else {
+    digitalWrite(pedWalkLightPin, HIGH); // Walk light OFF
+    digitalWrite(pedStopLightPin, LOW);  // Stop light ON
   }
-
 }
-void playWoodpecker() {
-  // 17x = 2secs; 85x = 10 seconds
-  for (int i = 0; i <= 85; i++) {
-    tone(spkPin, 500, 30);
-    delay(30);
-    noTone(spkPin);
-    delay(117); // wait
+
+void idleState() {
+  digitalWrite(redLightPin, HIGH);  // Red OFF
+  digitalWrite(yellowLightPin, HIGH); // Yellow OFF
+  handlePedestrianLights(false); // Pedestrian hand ON, walk OFF
+
+  for (int i = 0; i < 5; i++) { // Blink green 5 times
+    digitalWrite(greenLightPin, LOW);  // Green ON
+    delay(1500);
+    digitalWrite(greenLightPin, HIGH); // Green OFF
+    delay(1500);
   }
+}
+
+void pedestrianCrossing() {
+  digitalWrite(greenLightPin, LOW);  // Green ON
+  delay(halfWaitTime);
+
+  if (digitalRead(motionPin) == LOW) {
+    Serial.println("Motion detected. Proceeding with pedestrian crossing...");
+
+    digitalWrite(greenLightPin, HIGH); // Green OFF
+    digitalWrite(yellowLightPin, LOW); // Yellow ON
+    delay(2000);
+
+    digitalWrite(yellowLightPin, HIGH); // Yellow OFF
+    digitalWrite(redLightPin, LOW);    // Red ON
+
+    handlePedestrianLights(true);
+
+    unsigned long startTime = millis();
+    while (millis() - startTime < crossTime) {
+      playChirp();
+      delay(500); // Slight pause between chirps
+    }
+
+    digitalWrite(redLightPin, HIGH); // Red OFF
+    handlePedestrianLights(false);
+    idleState();
+  } else {
+    Serial.println("No motion detected. Returning to idle state...");
+    idleState();
+  }
+}
+
+void adjustTimingForWeather() {
+  int rainValue = analogRead(weatherSensorPin);
+  if (rainValue < rainThreshold) {
+    // Rain detected
+    Serial.println("Rain detected. Adjusting timings...");
+    waitTime = 15000; // Increase wait time in rain
+    crossTime = 20000; // Increase crossing time in rain
+  } else {
+    // No rain
+    Serial.println("No rain detected. Using default timings...");
+    waitTime = 10000; // Default wait time
+    crossTime = 15000; // Default crossing time
+  }
+  halfWaitTime = waitTime / 2;
+}
+
+void setup() {
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(motionPin, INPUT);
+  pinMode(redLightPin, OUTPUT);
+  pinMode(yellowLightPin, OUTPUT);
+  pinMode(greenLightPin, OUTPUT);
+  pinMode(pedWalkLightPin, OUTPUT);
+  pinMode(pedStopLightPin, OUTPUT);
+  pinMode(spkPin, OUTPUT);
+
+  digitalWrite(redLightPin, HIGH); // Red OFF
+  digitalWrite(yellowLightPin, HIGH); // Yellow OFF
+  digitalWrite(greenLightPin, HIGH); // Green OFF
+  handlePedestrianLights(false); // Hand ON, Walk OFF
+
+  Serial.begin(9600);
 }
 
 void loop() {
+  adjustTimingForWeather(); // Check and adjust timings based on weather
 
-  // Read the state of the button
- int  buttonState = digitalRead(buttonPin);
+  int buttonState = digitalRead(buttonPin);
 
-  if (buttonState == LOW) { // Button pressed (LOW with pull-up)
-    Serial.println("Button pressed, starting sequence...");
-    buttonPressTime = millis(); // Record the time button was pressed
-    playChirp();
-    // Wait for 3 seconds
-    delay(3000);
-
-    // Check for motion
-    motionDetected = digitalRead(motionPin);
-    if (motionDetected == HIGH) {
-      Serial.println("Motion detected! Continuing...");
-    } else {
-      Serial.println("No motion detected! Light will not turn on.");
-      return; // Stop further actions if no motion
-    }
-
-    // Wait until 10 seconds have passed since the button was pressed
-    while (millis() - buttonPressTime < 10000) {
-      // Do nothing, just wait
-    }
-
-    // Turn on the light
-    Serial.println("10 seconds passed, turning on light.");
-         digitalWrite(greenLightPin, LOW);
-      digitalWrite(yellowLightPin, HIGH);
-      delay(3000); // Yellow light delay
-      digitalWrite(yellowLightPin, LOW);
-      digitalWrite(redLightPin, HIGH);
-
-      // Pedestrian light ON
-      digitalWrite(pedLight1Pin, HIGH);
-      digitalWrite(pedLight2Pin, LOW);
-      playChirp();
-    // Keep the light on for demonstration; you can modify this part as needed
-    delay(5000); // Light stays on for 5 seconds (for testing purposes)
-      digitalWrite(redLightPin, LOW);
-      digitalWrite(greenLightPin, HIGH);
-      digitalWrite(pedLight1Pin, LOW);
-      digitalWrite(pedLight2Pin, HIGH);
-    Serial.println("Light turned off.");
+  if (buttonState == LOW) { // Button pressed
+    Serial.println("Button pressed. Starting pedestrian crossing process...");
+    delay(50); // Debounce
+    pedestrianCrossing();
+  } else {
+    idleState(); // Default idle state
+    delay(500);  // Short delay to prevent rapid state toggling
   }
-  else {
-    Serial.println("Button not pressed");
-  }
-  //delay(1000);
 }
