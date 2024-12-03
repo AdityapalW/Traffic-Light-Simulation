@@ -27,12 +27,6 @@ void playChirp() {
   }
 }
 
-void playIdleTone() {
-  tone(spkPin, 973, 25);
-  delay(25);
-  noTone(spkPin);
-}
-
 void handlePedestrianLights(bool walk) {
   if (walk) {
     digitalWrite(pedWalkLightPin, LOW); // Walk light ON
@@ -90,12 +84,10 @@ void pedestrianCrossing() {
 void adjustTimingForWeather() {
   int rainValue = analogRead(weatherSensorPin);
   if (rainValue < rainThreshold) {
-    // Rain detected
     Serial.println("Rain detected. Adjusting timings...");
     waitTime = 15000; // Increase wait time in rain
     crossTime = 20000; // Increase crossing time in rain
   } else {
-    // No rain
     Serial.println("No rain detected. Using default timings...");
     waitTime = 10000; // Default wait time
     crossTime = 15000; // Default crossing time
@@ -122,7 +114,7 @@ void setup() {
 }
 
 void loop() {
-  adjustTimingForWeather(); // Check and adjust timings based on weather
+  adjustTimingForWeather(); // Adjust timings based on weather conditions
 
   int buttonState = digitalRead(buttonPin);
 
